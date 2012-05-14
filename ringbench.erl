@@ -23,7 +23,7 @@ start(N, M) ->
   {_, Time2} = statistics(wall_clock),
   U1 = Time1,
   U2 = Time2,
-  io:format("main[~p] ring benchmark for ~p processes and ~p tokens = ~p (~p) milliseconds\n", [self(), N, M, U1, U2]).
+  io:format("[main(~p)] ring benchmark for ~p processes and ~p tokens = ~p (~p) milliseconds\n", [self(), N, M, U1, U2]).
 
 inject_tokens(Root, 0) -> Root ! {self(), kill};
 inject_tokens(Root, M) ->

@@ -19,7 +19,27 @@ Run the benchmark. (for fixed parameters, N = 10,  M = 50)
 (The case you want to set your parameters, you can invoke benchmark function directly in Erlang shell.)
 
     $ erl
-    > ringbench:start(20, 200)  % N = 20, M = 200
+    1> ringbench:start(20, 200)  % N = 20, M = 200
+
+Sample Output
+----------------
+    $ erl
+    1> ringbench:start(3, 1).
+    constructing 3 nodes ring...
+    [main(<0.31.0>)] start injecting 1 tokens.
+    [0(<0.49.0>)] starting...
+    [2(<0.50.0>)] starting...
+    [1(<0.51.0>)] starting...
+    [0(<0.49.0>)] token "1" is injected. forward to <0.51.0>.
+    [0(<0.49.0>)] token "kill" is injected. forward to <0.51.0>.
+    [1(<0.51.0>)] token "1" received. forwading to <0.50.0>
+    [1(<0.51.0>)] exitting...
+    [2(<0.50.0>)] token "1" received. forwading to <0.49.0>
+    [2(<0.50.0>)] exitting...
+    [0(<0.49.0>)] token "1" reaches root.
+    [0(<0.49.0>)] exitting...
+    [0(<0.49.0>)] report the finish of benchmark to main(<0.31.0>)
+    [main(<0.31.0>)] ring benchmark for 3 processes and 1 tokens = 0 (1) milliseconds
 
 Licence
 ----------------

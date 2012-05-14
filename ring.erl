@@ -2,19 +2,20 @@
 -export([init/2]).
 
 % Ring Initialization
+init(_, N) when N < 1 ->
+  exit(nMustBePositive);
 init(Main, N) ->
   io:format("constructing ~p nodes ring...~n", [N]),
   Root = root_start(0, Main),
-  First = create_nodes(N-1, Root),
+  First = create_nodes(1, N-1, Root),
   Root ! {link, First},
-  io:format("ring construction done.~n"),
   Root.
 
-create_nodes(0, Root)-> Root;
-create_nodes(1, Root)-> node_start(1, Root);
-create_nodes(N, Root)->
-  Next = create_nodes(N-1, Root),
-  node_start(N, Next).
+create_nodes(_, 0, Root)-> Root;
+create_nodes(N, N, Root)-> node_start(N, Root);
+create_nodes(I, N, Root)->
+  Next = create_nodes(I+1, N, Root),
+  node_start(I, Next).
 
 % Ordinal Node
 node_start(Name, Next) ->
@@ -33,7 +34,7 @@ node(Name, Next) ->
   end.
 
 forward_token(Name, Token, Next) ->
-      io:format("[~p(~p)] token \"~p\" received. forwading to [~p]~n", [Name, self(), Token, Next]),
+      io:format("[~p(~p)] token \"~p\" received. forwading to ~p~n", [Name, self(), Token, Next]),
       Next ! Token.
 
 forward_kill(Name, Next)->
@@ -42,9 +43,12 @@ forward_kill(Name, Next)->
 
 % Root node
 root_start(Name, Main) ->
-  spawn(fun() -> listen_tokens(Name, Main) end).
+  spawn(fun() ->
+          io:format("[~p(~p)] starting...~n", [Name, self()]),
+          wait_for_link(Name, Main)
+        end).
 
-listen_tokens(Name, Main) ->
+wait_for_link(Name, Main) ->
   receive
     {link, Next} ->
       listen_tokens(Name, Main, Next)
@@ -56,8 +60,8 @@ listen_tokens(Name, Main, Next) ->
       io:format("[~p(~p)] exitting... \n", [Name, self()]),
       io:format("[~p(~p)] report the finish of benchmark to main(~p)~n", [Name, self(), Main]),
       Main ! ended;
-    {From, Token} when From=:=Main ->
-       io:format("[~p(~p)] token \"~p\" is injected.~n", [Name, self(), Token]),
+    {Main, Token} ->
+       io:format("[~p(~p)] token \"~p\" is injected. forward to ~p.~n", [Name, self(), Token, Next]),
        Next ! Token,
        listen_tokens(Name, Main, Next);
     Token ->
