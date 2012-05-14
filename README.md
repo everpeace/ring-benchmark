@@ -8,18 +8,18 @@ This is my solution for the exercise in ["Programming in Erlang"](http://pragpro
 
 Hot to Run
 --------------
-1. Make Sources
+Make Sources
 
     $ make clean all
 
-2. Run the benchmark. (for fixed parameters, N = 10,  M = 50)
+Run the benchmark. (for fixed parameters, N = 10,  M = 50)
 
     $ make run
 
-3. (The case you want to set your parameters, you can invoke benchmark function directly.)
+(The case you want to set your parameters, you can invoke benchmark function directly in Erlang shell.)
 
     $ erl
-    &gt; ringbench:start(20, 200)  % N = 20, M = 200
+    > ringbench:start(20, 200)  % N = 20, M = 200
 
 Licence
 ----------------
