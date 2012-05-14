@@ -9,12 +9,12 @@ This is my solution for the exercise in ["Programming in Erlang"](http://pragpro
 Hot to Run
 --------------
 1. Make Sources
-  $ make clean all
+    $ make clean all
 2. Run the benchmark. (for fixed parameters, N = 10,  M = 50)
-  $ make run
+    $ make run
 3. (The case you want to set your parameters, you can invoke benchmark function directly.)
-  $ erl
-  > ringbenchmark:start(20, 200)  % N = 20, M = 200
+    $ erl
+    > ringbenchmark:start(20, 200)  % N = 20, M = 200
 
 Licence
 ----------------
