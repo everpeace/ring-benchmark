@@ -5,32 +5,43 @@
 init(_, N) when N < 1 ->
   exit(nMustBePositive);
 init(Main, N) ->
-  io:format("constructing ~p nodes ring...~n", [N]),
+  io:format("[main(~p)] constructing ~p nodes ring...~n", [self(), N]),
   Root = root_start(0, Main),
   First = create_nodes(1, N-1, Root),
   Root ! {link, First},
   Root.
 
 create_nodes(_, 0, Root)-> Root;
-create_nodes(N, N, Root)-> node_start(N, Root);
+create_nodes(N, N, Root)->
+  Node = node_start(N),
+  Node ! {link, Root},
+  Node;
 create_nodes(I, N, Root)->
+  Node = node_start(I),
   Next = create_nodes(I+1, N, Root),
-  node_start(I, Next).
+  Node ! {link, Next},
+  Node.
 
 % Ordinal Node
-node_start(Name, Next) ->
+node_start(Name) ->
   spawn(fun() ->
-        io:format("[~p(~p)] starting...~n", [Name, self()]),
-          node(Name, Next)
+          io:format("[~p(~p)] starting...~n", [Name, self()]),
+          wait_for_link(Name)
         end).
 
-node(Name, Next) ->
+wait_for_link(Name) ->
+  receive
+    {link, Next} ->
+      listen_tokens(Name, Next)
+  end.
+
+listen_tokens(Name, Next) ->
   receive
     kill ->
       forward_kill(Name, Next);
     Token ->
       forward_token(Name, Token, Next),
-      node(Name, Next)
+      listen_tokens(Name, Next)
   end.
 
 forward_token(Name, Token, Next) ->
@@ -61,7 +72,7 @@ listen_tokens(Name, Main, Next) ->
       io:format("[~p(~p)] report the finish of benchmark to main(~p)~n", [Name, self(), Main]),
       Main ! ended;
     {Main, Token} ->
-       io:format("[~p(~p)] token \"~p\" is injected. forward to ~p.~n", [Name, self(), Token, Next]),
+       io:format("[~p(~p)] token \"~p\" is injected from main. forward to ~p.~n", [Name, self(), Token, Next]),
        Next ! Token,
        listen_tokens(Name, Main, Next);
     Token ->
