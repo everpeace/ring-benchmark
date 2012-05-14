@@ -14,7 +14,7 @@ Hot to Run
     $ make run
 3. (The case you want to set your parameters, you can invoke benchmark function directly.)
     $ erl
-    > ringbenchmark:start(20, 200)  % N = 20, M = 200
+    > ringbench:start(20, 200)  % N = 20, M = 200
 
 Licence
 ----------------
