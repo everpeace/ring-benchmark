@@ -1,12 +1,13 @@
 -module(ring).
--export([init/2]).
+-export([init/3]).
 
 % Ring Initialization
-init(_, N) when N < 1 ->
-  exit(nMustBePositive);
-init(Main, N) ->
+init(_, N, M) when N < 1 orelse M < 1->
+  io:format("N and M must be larger than 1."),
+  exit({nMustBePositive, mMustBePositive});
+init(Main, N, M) ->
   io:format("[main(~p)] constructing ~p nodes ring...~n", [self(), N]),
-  Root = root_start(0, Main),
+  Root = root_start(0, Main, M),
   First = create_nodes(1, N-1, Root),
   Root ! {link, First},
   Root.
@@ -53,30 +54,40 @@ forward_kill(Name, Next)->
       Next ! kill.
 
 % Root node
-root_start(Name, Main) ->
+root_start(Name, Main, M) ->
   spawn(fun() ->
           io:format("[~p(~p)] starting...~n", [Name, self()]),
-          wait_for_link(Name, Main)
+          wait_for_link(Name, Main, M)
         end).
 
-wait_for_link(Name, Main) ->
+wait_for_link(Name, Main, M) ->
   receive
     {link, Next} ->
-      listen_tokens(Name, Main, Next)
+      listen_tokens(Name, Main, Next, M)
   end.
 
-listen_tokens(Name, Main, Next) ->
+listen_tokens(Name, Main, Next, M) ->
   receive
-    kill ->
-      io:format("[~p(~p)] exitting... \n", [Name, self()]),
-      io:format("[~p(~p)] report the finish of benchmark to main(~p)~n", [Name, self(), Main]),
-      Main ! ended;
+    % interfaces with main process.
+    {Main, kill} ->
+      Next ! kill,
+      listen_tokens(Name, Main, Next, M);
     {Main, Token} ->
-       io:format("[~p(~p)] token \"~p\" is injected from main. forward to ~p.~n", [Name, self(), Token, Next]),
-       Next ! Token,
-       listen_tokens(Name, Main, Next);
-    Token ->
-      io:format("[~p(~p)] token \"~p\" reaches root.~n", [Name, self(), Token]),
-       listen_tokens(Name, Main, Next)
+       io:format("[~p(~p)] token \"~p\" is injected from main. the token starts rounding in the ring.~n", [Name, self(), Token]),
+       Next ! {0, Token},
+       listen_tokens(Name, Main, Next, M);
+    % rounding the token.
+    {I, Token} when I =:= M-1 ->
+      io:format("[~p(~p)] token \"~p\" reaches root ~p times.~n", [Name, self(), Token, M]),
+      io:format("[~p(~p)] report the finish of benchmark to main(~p)~n", [Name, self(), Main]),
+      Main ! ended,
+      listen_tokens(Name, Main, Next, M);
+    {I, Token} ->
+      io:format("[~p(~p)] token \"~p\" reaches root ~p times.~n", [Name, self(), Token, I+1]),
+      Next ! {I+1, Token},
+      listen_tokens(Name, Main, Next, M);
+    % kill self.
+    kill ->
+      io:format("[~p(~p)] exitting... \n", [Name, self()])
   end.
 
