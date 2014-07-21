@@ -40,6 +40,11 @@ Sample Output
     [2(<0.35.0>)] exitting...
     [0(<0.33.0>)] exitting...
 
+Ring Benchmarks in Other Languages
+----
+* [everpeace/ring-benchmark-in-akka](https://github.com/everpeace/ring-benchmark-in-akka): ring benchmark in [Akka](http://akka.io/) (Scala).
+* [everpeace/ring_benchmark_in_elixir](https://github.com/everpeace/ring_benchmark_in_elixir): ring benchmark in [Elixir](http://elixir-lang.org/).
+
 Licence
 ----------------
 The benchmark codes are licensed under MIT License. See LICENSE.txt for further details.
